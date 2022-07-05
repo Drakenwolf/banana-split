@@ -28,7 +28,7 @@ contract BananaSplit {
         require(tokenA.transferFrom(msg.sender, address(this), amount),
         "Error: the trasnfer failed");
         
-        require(tokenB.transferFrom(address(this), msg.sender, amount * 1000),
+        require(tokenB.transfer(msg.sender, amount * 1000),
         "Error: the trasnfer failed");
 
     }
