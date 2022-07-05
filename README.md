@@ -1,15 +1,10 @@
-# Basic Sample Hardhat Project
+#Banana split
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts.
+Description:
 
-Try running some of the following tasks:
+ users deposit token A to redeem token B, where the ratio of A to B is 1:1000. For example a user deposits 10 A, then they receive 10,000 B. 
 
-```shell
-npx hardhat accounts
-npx hardhat compile
-npx hardhat clean
-npx hardhat test
-npx hardhat node
-node scripts/sample-script.js
-npx hardhat help
-```
+ This contract is tested with hardhat and chai.
+
+
+ ## Comands
