@@ -10,6 +10,8 @@ contract BananaSplit {
     IERC20 tokenA;
     IERC20 tokenB;
 
+    event BananaSwapEvent(address _user, uint256 amount);
+
     constructor(IERC20 _tokenA, IERC20 _tokenB){
         tokenA= _tokenA;
         tokenB= _tokenB;
@@ -30,6 +32,6 @@ contract BananaSplit {
         
         require(tokenB.transfer(msg.sender, amount * 1000),
         "Error: the trasnfer failed");
-
-    }
+        emit BananaSwapEvent(msg.sender, amount);
+    }   
 }
