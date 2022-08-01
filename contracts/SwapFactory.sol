@@ -5,23 +5,28 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./TokenB.sol";
 
-contract Factory is Ownable, Pausable {
+contract SwapFactory is Ownable, Pausable {
     TokenB[] public TokensBArray;
 
-    function CreateNewToken(string memory _name, string memory _symbol, uint256 _ratio, address  _acceptedToken)
-        public
-        onlyOwner
-    {
+    function CreateNewToken(
+        string memory _name,
+        string memory _symbol,
+        uint256 _ratio,
+        address _acceptedToken
+    ) public onlyOwner {
         //TODO change this for a minimal proxy
-        TokenB tokenB = new TokenB(_name, _symbol, _ratio, _acceptedToken);
+        TokenB tokenB = new TokenB(
+            _name,
+            _symbol,
+            _ratio,
+            _acceptedToken,
+            msg.sender
+        );
+
         TokensBArray.push(tokenB);
     }
 
-    function TokenBGetRatio(uint256 _tokenIndex)
-        public
-        view
-        returns (uint256)
-    {
-        return TokenB(address(TokensBArray[_tokenIndex])).ratio();
+    function getTokenB(uint256 _tokenIndex) public view returns (address) {
+        return address(TokensBArray[_tokenIndex]);
     }
 }

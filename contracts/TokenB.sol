@@ -16,12 +16,12 @@ contract TokenB is ERC20, Pausable, Ownable {
 
     ///@notice this will track the balance of the token before each execution of the swap functions
 
-    uint256 public balanceTokenA;
+    mapping(address => uint256) public balancePeerToken;
 
-    IERC20 public acceptedToken;
+    address public acceptedToken;
 
     event SwapEvent(
-        IERC20 tokenDeposited,
+        address tokenDeposited,
         address tokenSended,
         address depositor,
         address sender,
@@ -33,11 +33,13 @@ contract TokenB is ERC20, Pausable, Ownable {
         string memory _name,
         string memory _symbol,
         uint256 _ratio,
-        IERC20 _acceptedToken
+        address _acceptedToken,
+        address _owner
     ) ERC20(_name, _symbol) {
         _mint(msg.sender, 100_000_000 * 10**decimals());
         ratio = _ratio;
         acceptedToken = _acceptedToken;
+        transferOwnership(_owner);
     }
 
     function pause() public onlyOwner {
@@ -49,6 +51,7 @@ contract TokenB is ERC20, Pausable, Ownable {
     }
 
     function mint(address _to, uint256 _amount) public onlyOwner {
+        if (_to == address(this)) balancePeerToken[address(this)] += _amount;
         _mint(_to, _amount);
     }
 
@@ -57,35 +60,75 @@ contract TokenB is ERC20, Pausable, Ownable {
     /// this difference is due the chance that the token might have fees/taxes
     /// this way the calculation of the taxes doesn't rely on the contract
 
-    function swapTokenAForTokenB(uint256 _targetAmount, uint256 _depositAmount)
-        public
-        returns (bool)
-    {
+    function swapTokensAForTokensB(
+        uint256 _targetAmount,
+        uint256 _depositAmount
+    ) public {
         ///@notice that we save the old balance
 
-        uint256 oldBalance = balanceTokenA;
+        uint256 oldBalance = balancePeerToken[acceptedToken];
 
-        balanceTokenA += _targetAmount;
+        balancePeerToken[acceptedToken] += _targetAmount;
 
-        acceptedToken.safeTransferFrom(
+        IERC20(acceptedToken).safeTransferFrom(
             msg.sender,
             address(this),
             _depositAmount
         );
 
-        if (balanceTokenA - oldBalance != _targetAmount)
+        if (balancePeerToken[acceptedToken] - oldBalance != _targetAmount)
             revert(
                 "Error: there is a discrepancy with the amount received and the target value"
             );
 
         _mint(msg.sender, _targetAmount * ratio);
 
-        emit SwapEvent(acceptedToken, address(this), msg.sender, address(this), _targetAmount, _targetAmount * ratio);
+        emit SwapEvent(
+            address(acceptedToken),
+            address(this),
+            msg.sender,
+            address(this),
+            _targetAmount,
+            _targetAmount * ratio
+        );
     }
 
-    function swapTokenBForTokenA() public {}
+    function swapTokensBForTokensA(uint256 _amount) public {
+        if (_amount % ratio != 0)
+            revert(
+                "Error: the division between the amount and the ratio must exact"
+            );
 
-    function withdrawTokensA() public onlyOwner {}
+        uint256 oldBalance = balancePeerToken[address(this)];
+
+        balancePeerToken[address(this)] += _amount;
+
+        IERC20(address(this)).safeTransferFrom(
+            msg.sender,
+            address(this),
+            _amount
+        );
+
+        if (balancePeerToken[address(this)] - oldBalance != _amount)
+            revert(
+                "Error: there is a discrepancy with the amount received and the target value"
+            );
+
+        IERC20(acceptedToken).safeTransfer(msg.sender, _amount / ratio);
+
+        emit SwapEvent(
+            address(this),
+            address(acceptedToken),
+            msg.sender,
+            address(this),
+            _amount,
+            _amount / ratio
+        );
+    }
+
+    function withdrawTokens(uint256 _amount, address _token) public onlyOwner {
+        IERC20(_token).safeTransferFrom(address(this), msg.sender, _amount);
+    }
 
     function _beforeTokenTransfer(
         address from,

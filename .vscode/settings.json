@@ -3,7 +3,13 @@
         "solidity"
     ],
     "cSpell.words": [
+        "Adress",
+        "Adrress",
+        "bytecode",
         "IERC",
-        "Pausable"
+        "nomicfoundation",
+        "nomiclabs",
+        "Pausable",
+        "typechain"
     ]
 }
