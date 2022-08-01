@@ -7,6 +7,7 @@
         "Adrress",
         "bytecode",
         "IERC",
+        "keccak",
         "nomicfoundation",
         "nomiclabs",
         "Pausable",

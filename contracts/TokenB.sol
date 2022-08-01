@@ -2,7 +2,7 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "./ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -19,6 +19,7 @@ contract TokenB is ERC20, Pausable, Ownable {
     mapping(address => uint256) public balancePeerToken;
 
     address public acceptedToken;
+    address public override factory;
 
     event SwapEvent(
         address tokenDeposited,
@@ -29,14 +30,19 @@ contract TokenB is ERC20, Pausable, Ownable {
         uint256 amountSended
     );
 
-    constructor(
+    constructor() {
+        factory = msg.sender;
+    }
+
+    function initialize(
         string memory _name,
         string memory _symbol,
         uint256 _ratio,
         address _acceptedToken,
         address _owner
-    ) ERC20(_name, _symbol) {
-        _mint(msg.sender, 100_000_000 * 10**decimals());
+    ) public {
+        if (msg.sender != factory) revert("Error: Forbidden");
+        initializeToken(_name, _symbol);
         ratio = _ratio;
         acceptedToken = _acceptedToken;
         transferOwnership(_owner);
@@ -81,8 +87,6 @@ contract TokenB is ERC20, Pausable, Ownable {
                 "Error: there is a discrepancy with the amount received and the target value"
             );
 
-        _mint(msg.sender, _targetAmount * ratio);
-
         emit SwapEvent(
             address(acceptedToken),
             address(this),
@@ -91,6 +95,8 @@ contract TokenB is ERC20, Pausable, Ownable {
             _targetAmount,
             _targetAmount * ratio
         );
+
+        _mint(msg.sender, _targetAmount * ratio);
     }
 
     function swapTokensBForTokensA(uint256 _amount) public {
@@ -114,8 +120,6 @@ contract TokenB is ERC20, Pausable, Ownable {
                 "Error: there is a discrepancy with the amount received and the target value"
             );
 
-        IERC20(acceptedToken).safeTransfer(msg.sender, _amount / ratio);
-
         emit SwapEvent(
             address(this),
             address(acceptedToken),
@@ -124,6 +128,8 @@ contract TokenB is ERC20, Pausable, Ownable {
             _amount,
             _amount / ratio
         );
+
+        IERC20(acceptedToken).safeTransfer(msg.sender, _amount / ratio);
     }
 
     function withdrawTokens(uint256 _amount, address _token) public onlyOwner {
