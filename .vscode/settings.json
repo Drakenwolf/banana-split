@@ -7,10 +7,13 @@
         "Adrress",
         "bytecode",
         "IERC",
+        "Initializable",
         "keccak",
+        "mixedcase",
         "nomicfoundation",
         "nomiclabs",
         "Pausable",
+        "solhint",
         "typechain"
     ]
 }

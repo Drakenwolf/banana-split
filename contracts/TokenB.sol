@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.7;
 
+import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract TokenB is ERC20, Pausable, Ownable {
+contract TokenB is Initializable, ERC20Upgradeable, OwnableUpgradeable {
     using SafeERC20 for IERC20;
 
     ///@notice the ratio for the swap function
@@ -19,7 +19,6 @@ contract TokenB is ERC20, Pausable, Ownable {
     mapping(address => uint256) public balancePeerToken;
 
     address public acceptedToken;
-    address public override factory;
 
     event SwapEvent(
         address tokenDeposited,
@@ -30,9 +29,7 @@ contract TokenB is ERC20, Pausable, Ownable {
         uint256 amountSended
     );
 
-    constructor() {
-        factory = msg.sender;
-    }
+    constructor() {}
 
     function initialize(
         string memory _name,
@@ -40,20 +37,12 @@ contract TokenB is ERC20, Pausable, Ownable {
         uint256 _ratio,
         address _acceptedToken,
         address _owner
-    ) public {
-        if (msg.sender != factory) revert("Error: Forbidden");
-        initializeToken(_name, _symbol);
+    ) public initializer {
+        __ERC20_init(_name, _symbol);
+        __Ownable_init();
         ratio = _ratio;
         acceptedToken = _acceptedToken;
         transferOwnership(_owner);
-    }
-
-    function pause() public onlyOwner {
-        _pause();
-    }
-
-    function unpause() public onlyOwner {
-        _unpause();
     }
 
     function mint(address _to, uint256 _amount) public onlyOwner {
@@ -140,7 +129,7 @@ contract TokenB is ERC20, Pausable, Ownable {
         address from,
         address to,
         uint256 amount
-    ) internal override whenNotPaused {
+    ) internal override {
         super._beforeTokenTransfer(from, to, amount);
     }
 }
