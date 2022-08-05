@@ -37,7 +37,7 @@ contract TokenB is Initializable, ERC20Upgradeable, OwnableUpgradeable {
         uint256 _ratio,
         address _acceptedToken,
         address _owner
-    ) public initializer {
+    ) external initializer {
         __ERC20_init(_name, _symbol);
         __Ownable_init();
         ratio = _ratio;
@@ -58,7 +58,7 @@ contract TokenB is Initializable, ERC20Upgradeable, OwnableUpgradeable {
     function swapTokensAForTokensB(
         uint256 _targetAmount,
         uint256 _depositAmount
-    ) public {
+    ) external {
         ///@notice that we save the old balance
 
         uint256 oldBalance = balancePeerToken[acceptedToken];
@@ -88,7 +88,8 @@ contract TokenB is Initializable, ERC20Upgradeable, OwnableUpgradeable {
         _mint(msg.sender, _targetAmount * ratio);
     }
 
-    function swapTokensBForTokensA(uint256 _amount) public {
+    function swapTokensBForTokensA(uint256 _amount) external {
+        //TODO there is a reentrancy events risk
         if (_amount % ratio != 0)
             revert(
                 "Error: the division between the amount and the ratio must exact"
@@ -109,6 +110,8 @@ contract TokenB is Initializable, ERC20Upgradeable, OwnableUpgradeable {
                 "Error: there is a discrepancy with the amount received and the target value"
             );
 
+        IERC20(acceptedToken).safeTransfer(msg.sender, _amount / ratio);
+
         emit SwapEvent(
             address(this),
             address(acceptedToken),
@@ -117,11 +120,12 @@ contract TokenB is Initializable, ERC20Upgradeable, OwnableUpgradeable {
             _amount,
             _amount / ratio
         );
-
-        IERC20(acceptedToken).safeTransfer(msg.sender, _amount / ratio);
     }
 
-    function withdrawTokens(uint256 _amount, address _token) public onlyOwner {
+    function withdrawTokens(uint256 _amount, address _token)
+        external
+        onlyOwner
+    {
         IERC20(_token).safeTransferFrom(address(this), msg.sender, _amount);
     }
 

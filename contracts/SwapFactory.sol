@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
@@ -7,7 +7,7 @@ import "./TokenB.sol";
 import "hardhat/console.sol";
 
 contract SwapFactory is Ownable, Pausable {
-    address[] public BananaSplitArray;
+    address[] public bananaSplitArray;
     address public originalBanana;
 
     event BananaSwapCreated(
@@ -17,8 +17,8 @@ contract SwapFactory is Ownable, Pausable {
         address _acceptedToken
     );
 
-    constructor(address _originalBanana
-    ) {
+    constructor(address _originalBanana) {
+        if(_originalBanana == address(0x0)) revert("Error: zero address");
         originalBanana = _originalBanana;
     }
 
@@ -27,15 +27,17 @@ contract SwapFactory is Ownable, Pausable {
         string memory _symbol,
         uint256 _ratio,
         address _acceptedToken
-    ) public onlyOwner returns (uint256) {
+    ) external onlyOwner returns (uint256) {
         bytes32 salt = keccak256(
             abi.encodePacked(_name, _symbol, _ratio, _acceptedToken)
         );
-        uint256 index = BananaSplitArray.length + 1;
+        uint256 index = bananaSplitArray.length + 1;
         address newBananaSplit = Clones.cloneDeterministic(
             address(originalBanana),
             salt
         );
+
+        bananaSplitArray.push(newBananaSplit);
 
         emit BananaSwapCreated(newBananaSplit, index, _ratio, _acceptedToken);
         TokenB(newBananaSplit).initialize(
@@ -45,12 +47,15 @@ contract SwapFactory is Ownable, Pausable {
             _acceptedToken,
             address(this)
         );
-        BananaSplitArray.push(newBananaSplit);
 
         return index;
     }
 
-    function getBananaSwap(uint256 _tokenIndex) public view returns (address) {
-        return address(BananaSplitArray[_tokenIndex]);
+    function getBananaSwap(uint256 _tokenIndex)
+        external
+        view
+        returns (address)
+    {
+        return address(bananaSplitArray[_tokenIndex]);
     }
 }
