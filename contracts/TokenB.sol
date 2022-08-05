@@ -19,7 +19,7 @@ contract TokenB is Initializable, ERC20Upgradeable, OwnableUpgradeable {
     mapping(address => uint256) public balancePeerToken;
 
     address public acceptedToken;
-
+    
     event SwapEvent(
         address tokenDeposited,
         address tokenSended,

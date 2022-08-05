@@ -1,9 +1,7 @@
 import chai from "chai";
-import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import { solidity, MockProvider } from "ethereum-waffle";
-import { Contract, Signer } from "ethers";
+import { solidity } from "ethereum-waffle";
 import { deployer } from "../helper";
 chai.use(solidity);
 

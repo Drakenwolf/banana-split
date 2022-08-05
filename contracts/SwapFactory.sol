@@ -18,7 +18,7 @@ contract SwapFactory is Ownable, Pausable {
     );
 
     constructor(address _originalBanana) {
-        if(_originalBanana == address(0x0)) revert("Error: zero address");
+        if (_originalBanana == address(0x0)) revert("Error: zero address");
         originalBanana = _originalBanana;
     }
 
@@ -57,5 +57,9 @@ contract SwapFactory is Ownable, Pausable {
         returns (address)
     {
         return address(bananaSplitArray[_tokenIndex]);
+    }
+
+    function getLength() external view returns (uint256) {
+        return bananaSplitArray.length;
     }
 }
